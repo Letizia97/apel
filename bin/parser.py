@@ -30,7 +30,13 @@ import sys
 import re
 import gzip
 import bz2
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    # Renamed in Python 3
+    import configparser as ConfigParser
+
 from optparse import OptionParser
 
 from apel import __version__
@@ -109,7 +115,7 @@ def parse_file(parser, apel_db, fp, replace):
         line_number = index + 1
         try:
             record = parser.parse(line)
-        except Exception, e:
+        except Exception as e:
             log.debug('Error %s on line %d', e, line_number)
             failed += 1
             if str(e) in exceptions:
@@ -195,14 +201,14 @@ def scan_dir(parser, dirpath, reparse, expr, apel_db, processed):
                                     parsed, total = parse_file(parser, apel_db,
                                                                fp, reparse)
                                     break
-                                except (IOError, EOFError), e:
+                                except (IOError, EOFError) as e:
                                     if method == open:
                                         raise
                             finally:
                                 fp.close()
-                    except IOError, e:
+                    except IOError as e:
                         log.error('Cannot parse file %s: %s', item, e)
-                    except ApelDbException, e:
+                    except ApelDbException as e:
                         log.error('Failed to parse %s due to a database problem: %s', item, e)
                     else:
                         pr = ProcessedRecord()
@@ -222,7 +228,7 @@ def scan_dir(parser, dirpath, reparse, expr, apel_db, processed):
 
         return updated
 
-    except KeyError, e:
+    except KeyError as e:
         log.fatal('Improperly configured.')
         log.fatal('Check the section for %s , %s', parser, e)
         sys.exit(1)
@@ -273,9 +279,9 @@ def handle_parsing(log_type, apel_db, cp):
 
     try:
         parser = PARSERS[log_type](site, machine_name, mpi)
-    except (NotImplementedError), e:
+    except (NotImplementedError) as e:
         raise ParserConfigException(e)
-    except KeyError, e:
+    except KeyError as e:
         raise ParserConfigException("Not a valid parser type: %s" % e)
 
     # Set parser specific options
@@ -337,7 +343,7 @@ def main():
     try:
         cp = ConfigParser.ConfigParser()
         cp.read(options.config)
-    except Exception, e:
+    except Exception as e:
         sys.stderr.write(str(e))
         sys.stderr.write('\n')
         sys.exit(1)
@@ -350,9 +356,9 @@ def main():
             set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
-    except (ConfigParser.Error, ValueError, IOError), err:
-        print 'Error configuring logging: %s' % str(err)
-        print 'The system will exit.'
+    except (ConfigParser.Error, ValueError, IOError) as err:
+        print('Error configuring logging: %s' % str(err))
+        print('The system will exit.')
         sys.exit(1)
 
     log = logging.getLogger(LOGGER_ID)
@@ -369,11 +375,11 @@ def main():
                          cp.get('db', 'name'))
         apel_db.test_connection()
         log.info('Connection to DB established')
-    except KeyError, e:
+    except KeyError as e:
         log.fatal('Database configured incorrectly.')
         log.fatal('Check the database section for option: %s', e)
         sys.exit(1)
-    except Exception, e:
+    except Exception as e:
         log.fatal("Database exception: %s", e)
         log.fatal('Parser will exit.')
         log.info(LOG_BREAK)
@@ -384,7 +390,7 @@ def main():
     try:
         if cp.getboolean('blah', 'enabled'):
             handle_parsing('blah', apel_db, cp)
-    except (ParserConfigException, ConfigParser.NoOptionError), e:
+    except (ParserConfigException, ConfigParser.NoOptionError) as e:
         log.fatal('Parser misconfigured: %s', e)
         log.fatal('Parser will exit.')
         log.info(LOG_BREAK)
@@ -395,7 +401,7 @@ def main():
     try:
         if cp.getboolean('batch', 'enabled'):
             handle_parsing(cp.get('batch', 'type'), apel_db, cp)
-    except (ParserConfigException, ConfigParser.NoOptionError), e:
+    except (ParserConfigException, ConfigParser.NoOptionError) as e:
         log.fatal('Parser misconfigured: %s', e)
         log.fatal('Parser will exit.')
         log.info(LOG_BREAK)

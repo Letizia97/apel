@@ -28,8 +28,8 @@ from dirq.QueueSimple import QueueSimple
 try:
     from apel.db.loader.loader import QSCHEMA
 except ImportError:
-    print 'The apel package must be in the PYTHONPATH.'
-    print 'Exiting.'
+    print('The apel package must be in the PYTHONPATH.')
+    print('Exiting.')
     sys.exit(1)
 
 
@@ -39,8 +39,8 @@ def check_dir(root):
     or accept directories.  If they exist, check them for
     messages.
     '''
-    print '\nStarting message status script.'
-    print 'Root directory: %s\n' % root
+    print('\nStarting message status script.')
+    print('Root directory: %s\n' % root)
     queues = []
     incoming = os.path.join(root, 'incoming')
     if os.path.isdir(incoming):
@@ -59,8 +59,8 @@ def check_dir(root):
     for q in queues:
         msgs, locked = check_queue(q)
         #check_empty_dirs(q)
-        print '    Messages: %s' % msgs
-        print '    Locked:   %s\n' % locked
+        print('    Messages: %s' % msgs)
+        print('    Locked:   %s\n' % locked)
         if locked > 0:
             question = 'Unlock %s messages?' % locked
             if ask_user(question):
@@ -72,7 +72,7 @@ def check_queue(q):
     Given a queue, check through all messages to
     see if any are locked.  Return <total>, <number locked>.
     '''
-    print 'Checking directory: %s' % q.path
+    print('Checking directory: %s' % q.path)
     locked = 0
     name = q.first()
     # loop until there are no messages left
@@ -90,17 +90,17 @@ def check_queue(q):
 def check_empty_dirs(q):
     empty_dirs = []
     path = q.path
-    print "Checking path %s " % path
+    print("Checking path %s " % path)
     for item in os.listdir(path):
         ipath = os.path.join(path, item)
         if os.path.isdir(ipath):
-            print item
+            print(item)
             if len(os.listdir(ipath)) == 0:
                 #empty_dirs.append(ipath)
                 os.rmdir(ipath)
 
 
-    print empty_dirs
+    print(empty_dirs)
 
 
 
@@ -127,18 +127,18 @@ def ask_user(question):
         elif ans == 'n':
             return False
         else:
-            print 'Choose y or n:'
+            print('Choose y or n:')
             continue
 
 
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print "Usage: %s <path to messages directory>"
+        print("Usage: %s <path to messages directory>")
         sys.exit()
 
     if not os.path.isdir(sys.argv[1]):
-        print 'Directory %s does not exist. Exiting.' % sys.argv[1]
+        print('Directory %s does not exist. Exiting.' % sys.argv[1])
         sys.exit()
 
     check_dir(sys.argv[1])

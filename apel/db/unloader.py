@@ -22,9 +22,11 @@ from apel.db.records import (JobRecord, SummaryRecord, NormalisedSummaryRecord,
                              SyncRecord, CloudRecord, CloudSummaryRecord, StorageRecord)
 from dirq.QueueSimple import QueueSimple
 try:
-    import cStringIO as StringIO
-except ImportError:
     import StringIO
+except ImportError:
+    # for Python 3
+    from io import StringIO
+
 import datetime
 import os
 import logging
