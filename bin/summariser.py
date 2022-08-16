@@ -37,7 +37,7 @@ from apel.common import set_up_logging, LOG_BREAK
 from apel import __version__
 
 
-def runprocess(db_config_file, config_file, log_config_file):
+def runprocess(db_config_file, config_file):
     '''Parse the configuration file, connect to the database and run the
        summarising process.'''
 
@@ -73,12 +73,11 @@ def runprocess(db_config_file, config_file, log_config_file):
 
     # set up logging
     try:
-        if os.path.exists(log_config_file):
-            logging.config.fileConfig(log_config_file)
-        else:
-            set_up_logging(cp.get('logging', 'logfile'),
-                           cp.get('logging', 'level'),
-                           cp.getboolean('logging', 'console'))
+        set_up_logging(
+            cp.get('logging', 'logfile'),
+            cp.get('logging', 'level'),
+            cp.getboolean('logging', 'console')
+        )
         log = logging.getLogger('summariser')
     except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % str(err))
@@ -163,8 +162,13 @@ if __name__ == '__main__':
                           default='/etc/apel/db.cfg')
     opt_parser.add_option('-c', '--config', help='the location of config file',
                           default='/etc/apel/summariser.cfg')
-    opt_parser.add_option('-l', '--log_config', help='Location of logging config file (optional)',
-                          default='/etc/apel/logging.cfg')
+    opt_parser.add_option('-l', '--log_config', help='DEPRECATED - Location of logging config file (optional)',
+                          default=None)
     (options,args) = opt_parser.parse_args()
 
-    runprocess(options.db, options.config, options.log_config)
+    # Deprecating functionality.
+    old_log_config_default_path = '/etc/apel/logging.cfg'
+    if (os.path.exists(old_log_config_default_path) or options.log_config != None):
+        logging.warning('Separate logging config file option has been deprecated.')
+
+    runprocess(options.db, options.config)

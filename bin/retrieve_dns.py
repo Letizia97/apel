@@ -99,12 +99,11 @@ def get_config(config_file):
 
     # set up logging
     try:
-        if os.path.exists(options.log_config):
-            logging.config.fileConfig(options.log_config)
-        else:
-            set_up_logging(cp.get('logging', 'logfile'),
-                           cp.get('logging', 'level'),
-                           cp.getboolean('logging', 'console'))
+        set_up_logging(
+            cp.get('logging', 'logfile'),
+            cp.get('logging', 'level'),
+            cp.getboolean('logging', 'console')
+        )
     except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % str(err))
         print('The system will exit.')
@@ -221,7 +220,7 @@ def verify_dn(dn):
     return True
 
 
-def runprocess(config_file, log_config_file):
+def runprocess(config_file):
     '''Get DNs both from the URL and the additional file.'''
     cfg = get_config(config_file)
 
@@ -327,8 +326,13 @@ if __name__ == '__main__':
     opt_parser = OptionParser(description=__doc__, version=ver)
     opt_parser.add_option('-c', '--config', help='location of the config file',
                           default='/etc/apel/auth.cfg')
-    opt_parser.add_option('-l', '--log_config', help='Location of logging config file (optional)',
-                          default='/etc/apel/logging.cfg')
+    opt_parser.add_option('-l', '--log_config', help='DEPRECATED - Location of logging config file (optional)',
+                          default=None)
     (options, args) = opt_parser.parse_args()
 
-    runprocess(options.config, options.log_config)
+    # Deprecating functionality.
+    old_log_config_default_path = '/etc/apel/logging.cfg'
+    if (os.path.exists(old_log_config_default_path) or options.log_config != None):
+        logging.warning('Separate logging config file option has been deprecated.')
+
+    runprocess(options.config)
